@@ -1,0 +1,74 @@
+<project name="jboss-test" default="build" basedir=".">
+	<property name="srcDir" value="src"/>
+	<property name="libDir" value="lib"/>
+	<property name="releaseDir" value="release"/>
+    <property name="tmpDir" value="tmp"/>
+    <property name="resourceDir" value="../wwwroot"/>
+    <property name="deployDir" value="D:/wildfly/wildfly-10.0.0.Final/standalone/deployments"/>
+    
+    <property name="appName" value="jaxrsdemo"/>
+    
+    <target name="compile">
+        <mkdir dir="${tmpDir}"/>
+        <mkdir dir="${tmpDir}/classes"/>
+
+        <javac
+        	srcdir="${srcDir}" destdir="${tmpDir}/classes"
+        	target="1.8"
+        	encoding="UTF8" debug="on" debuglevel="source,lines">
+        	
+            <classpath id="classpath">
+                <fileset dir="lib" includes="**/*.jar"/>
+            </classpath>
+            
+            <exclude name="hotel/app/Main.java"/>
+        </javac>
+        <copy todir="${tmpDir}/classes" overwrite="true">
+            <fileset dir="${srcDir}" excludes="**/*.java"/>
+        </copy>
+    </target>
+    
+    <target name="build" depends="compile">
+        <mkdir dir="${tmpDir}/WEB-INF/classes/" />
+        <mkdir dir="${releaseDir}" />
+        
+        <!--standalone-->
+        <jar basedir="${tmpDir}/classes" destfile="${releaseDir}/${appName}.jar">
+            <include name="**"/>
+        </jar>
+        
+        <copy todir="${tmpDir}/WEB-INF" overwrite="true">
+            <fileset dir="${srcDir}/WEB-INF"/>
+        </copy>
+        <copy todir="${tmpDir}/WEB-INF/classes" overwrite="true">
+            <fileset dir="${tmpDir}/classes"/>
+        </copy>
+        <copy todir="${tmpDir}/WEB-INF/lib" overwrite="true">
+        	<fileset dir="${libDir}">
+            	<include name="gson*.jar"/>
+            </fileset>
+        </copy>
+        <jar basedir="${tmpDir}" destfile="${releaseDir}/${appName}.war">
+            <include name="WEB-INF/**"/>
+        </jar>
+        <jar basedir="${resourceDir}" destfile="${releaseDir}/${appName}.war" update="true">
+            <include name="**"/>
+            <exclude name="**/*test*"/>
+            <exclude name="**/*jquery*"/>
+        </jar>
+        
+        <delete dir="${tmpDir}/lib"/>
+        <delete dir="${tmpDir}/WEB-INF"/>
+        <delete dir="${tmpDir}/META-INF"/>
+    </target>
+    
+    <target name="clean">
+    	<delete dir="${tmpDir}/classes"/>
+    </target>
+    
+    <target name="deploy" depends="build">
+        <copy todir="${deployDir}" overwrite="true">
+            <fileset dir="${releaseDir}" includes="${appName}.war" />
+        </copy>
+    </target>
+</project>

@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+  <head>
+    <title></title>
+    
+    <!--
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.9/css/jquery.dataTables.min.css">
+    <script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
+    
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script type="text/javascript" language="javascript" src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    -->
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/u/ju-1.11.4/jqc-1.12.3,dt-1.10.12,sc-1.4.2/datatables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/u/ju-1.11.4/jqc-1.12.3,dt-1.10.12,sc-1.4.2/datatables.min.js"></script>    
+    
+    <script type="text/javascript" language="javascript" src="api.js"></script>
+    <script type="text/javascript" language="javascript" src="util.js"></script>
+    <script>
+      $(function() {
+        $("#personDialog").dialog({
+          autoOpen:false,
+          modal: true,
+          width: 400
+        });
+      });
+      $(function() {
+        $("#birthdateUi").datepicker();
+        $("#birthdateUi").datepicker("option", "dateFormat", UI_DATE_FORMAT);
+      });
+      PERSON_API_PATH="api/person";
+  </script>
+</head>  </script>
+    <style>
+      #personDialog input{
+        width: 280px;
+      }
+    </style>
+  </head>
+  <body>
+    <table id="personTable"></table>
+  </body>
+  <div id="personDialog">
+    <table>
+      <tr><td>Name</td><td><input type=text id="nameUi"></input></td></tr>
+      <tr><td>Pat. name</td><td><input type=text id="patnameUi" size=40></input></td></tr>
+      <tr><td>Surname</td><td><input type=text id="surnameUi" size=40></input></td></tr>
+      <tr><td>Birthdate</td><td><input type=text id="birthdateUi" size=40></input></td></tr>
+    </table>
+  </div>
+  
+  <script>
+    table=$('#personTable').DataTable({
+      columns: [
+        { title: "Id"},
+        { title: "Name"},
+        { title: "Pat.name"},
+        { title: "Surname"},
+        { title: "Birthdate", width: "15em"},
+        {
+          title: "<a href=# onclick='addPerson()'>+ Add person</a>",
+          data: 0,
+          width: "10em",
+          orderable: false,
+          render:{
+            display: function(celldata,type,rowdata,meta){
+              return "<a href='#' class='.deleteLink'>Delete</a> | "+
+                     "<a href='#' class='.editLink'>Edit</a>";
+            }
+          }
+        }
+      ],
+      paging: false,
+      rowId: 0 //use first column as row id
+    });
+    $("#personTable tbody").on("click","tr",function(){
+      table.$("tr.selected").removeClass("selected");
+    });
+    $("#personTable").on("click","a",function(evt){
+      $tr=$(this).closest("tr");
+      $tr.addClass("selected");
+      var id=table.row($tr).id();
+      switch(this.classList[0]){
+        case ".editLink": editPerson(id); break;
+        case ".deleteLink": deletePerson(id); break;
+      }
+      evt.stopPropagation();
+    });
+    $("#personTable tbody").on("dblclick","tr",function(){
+      $(this).addClass("selected");
+      editPerson(table.row(this).id());
+    });
+    
+//    window.onload=function(){
+    dbFindPerson({},function(list){
+      var data=tableData(list);
+      table.rows().remove();
+      table.rows.add(data).draw();
+    });
+    
+    function addPerson(){
+      nameUi.value=null;
+      patnameUi.value=null;
+      surnameUi.value=null;
+      birthdateUi.value=null;
+      var dialog=$("#personDialog").dialog({
+        title: "New person",
+        buttons:{
+          "Create": function(){
+            var obj={
+              name: nameUi.value,
+              patname: patnameUi.value,
+              surname: surnameUi.value,
+              birthDate: encodeDate(birthdateUi.value)
+            };
+            dbCreatePerson(obj, function(person){
+              var data=tableData(person);
+              var row=table.row.add(data);
+              row.draw();
+              tr=row.node();
+              table.$("tr.selected").removeClass("selected");
+              $(tr).addClass("selected");
+              dialog.dialog("close");
+            });
+          },
+          "Cancel": function(){
+            dialog.dialog("close");
+          }
+        }
+      }).dialog("open");
+    }
+    
+    function editPerson(id){
+      var row=table.row("#"+id);
+      var data=row.data();
+      nameUi.value=data[1];
+      patnameUi.value=data[2];
+      surnameUi.value=data[3];
+      birthdateUi.value=decodeDate(data[4]);
+      var dialog=$("#personDialog").dialog({
+        title: "Person #"+id,
+        buttons:{
+          "Update": function(){
+            var obj={
+              id: id,
+              name: nameUi.value,
+              patname: patnameUi.value,
+              surname: surnameUi.value,
+              birthDate: encodeDate(birthdateUi.value)
+            };
+            dbUpdatePerson(obj, function(){
+              row.data(tableData(obj));
+              dialog.dialog("close");
+            });
+          },
+          "Cancel": function(){
+            dialog.dialog("close");
+          }
+        }
+      }).dialog("open");
+    }
+    
+    function deletePerson(id){
+      dbDeletePerson({id: id}, function(){
+        table.row("#"+id).remove().draw();
+      });
+    }
+  </script>
+</html>
