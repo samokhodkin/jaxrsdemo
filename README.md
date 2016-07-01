@@ -7,6 +7,7 @@ Can be run as standalone application with embedded Jetty server, or as a regular
 Run ant in /java
 
 ## running
+- using a prebuilt war: take one from /builds and deploy
 - build and deploy /release/jaxrsdemo.war, go to http://localhost/<app name>/person.html
 - or build and run /bin/run.sh, go to http://localhost:8080/person.html
 

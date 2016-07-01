@@ -14,7 +14,7 @@
 
         <javac
         	srcdir="${srcDir}" destdir="${tmpDir}/classes"
-        	target="1.8"
+        	target="1.7" source="1.7"
         	encoding="UTF8" debug="on" debuglevel="source,lines">
         	
             <classpath id="classpath">
