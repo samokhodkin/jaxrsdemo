@@ -9,26 +9,11 @@ import javax.ws.rs.core.*;
 import com.google.gson.*;
 
 import bwf.jaxrsdemo.api.*;
+import static bwf.jaxrsdemo.rest.GsonConverter.gson;
 
 @Path("/person")
 public class PersonApi{
    public static Db db; //inject
-   
-   private static final Gson gson = new GsonBuilder().registerTypeAdapter(
-      Date.class, new JsonSerializer<Date>(){
-         public JsonElement serialize(
-            Date src, Type typeOfSrc, JsonSerializationContext context
-         ){
-            return src == null ? null : new JsonPrimitive(src.getTime());
-         }
-      }
-   ).registerTypeAdapter(Date.class, new JsonDeserializer<Date>(){
-      public Date deserialize(
-         JsonElement json, Type typeOfT, JsonDeserializationContext context
-      ) throws JsonParseException{
-         return json == null ? null : new Date(json.getAsLong());
-      }
-   }).create();
    
    @GET
    @Path("/get")
@@ -76,16 +61,22 @@ System.out.println("Api.findByPost("+name+","+patname+","+surname+","+from+","+t
    @POST
    @Path("/create")
    @Produces(MediaType.APPLICATION_JSON)
-   public Person create(@FormParam("data") Person data){
-      return db.create(data);
+   public Person create(@FormParam("data") String jsonData){ //Person data){ downgrade to EE6
+System.out.println("Api.create(): jsonData="+jsonData);
+      //return db.create(data);
+      //param conversion not supported in EE6
+      Person p=gson.fromJson(jsonData,Person.class);
+      return db.create(p);
    }
    
    @POST
    @Path("/update")
    @Produces(MediaType.APPLICATION_JSON)
-   public void update(@FormParam("data") Person data){
-System.out.println("Api.update(): data="+data);
-      db.update(data);
+   public void update(@FormParam("data") String jsonData){ //Person data){ downgrade to EE6
+System.out.println("Api.update(): jsonData="+jsonData);
+      //db.update(data);
+      Person p=gson.fromJson(jsonData,Person.class);
+      db.update(p);
    }
    
    @POST
@@ -107,8 +98,9 @@ System.out.println("Api.test()");
    @POST
    @Path("/test")
    @Produces(MediaType.APPLICATION_JSON)
-   public Person testPost(@FormParam("data") Person p){
-System.out.println("Api.testPost("+p+")");
+   public Person testPost(@FormParam("data") String jsonData){ //Person p){ downgrade to EE6
+System.out.println("Api.testPost("+jsonData+")");
+      Person p=gson.fromJson(jsonData,Person.class);
       return p;
    }
    

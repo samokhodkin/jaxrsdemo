@@ -19,14 +19,11 @@ import bwf.jaxrsdemo.api.*;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class GsonConverter implements 
-   MessageBodyReader<Object>, MessageBodyWriter<Object>, ParamConverterProvider
+   MessageBodyReader<Object>, MessageBodyWriter<Object>//, ParamConverterProvider downgrade to EE6
 {
-static{
-   System.out.println("GsonConverter loaded");
-}   
    private static final Charset utf8=Charset.forName("utf8");
    
-   private static final Gson gson = new GsonBuilder().registerTypeAdapter(
+   public static final Gson gson = new GsonBuilder().registerTypeAdapter(
       Date.class, new JsonSerializer<Date>(){
          public JsonElement serialize(
             Date src, Type typeOfSrc, JsonSerializationContext context
