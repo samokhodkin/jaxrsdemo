@@ -78,20 +78,20 @@ public class GsonConverter implements
       entityStream.write(bb.array(), bb.arrayOffset(), bb.remaining());
    }
    
-   public <T> ParamConverter<T> getConverter(
-      final Class<T> rawType, Type genericType, Annotation[] annotations
-   ){
-//System.out.println("GsonConverter.getConverter("+rawType+",..)");
-      if(rawType.isPrimitive()) return null;
-      if(rawType==String.class) return null;
-      return new ParamConverter<T>(){
-         public T fromString(String value){
-//System.out.println("GsonConverter.getConverter("+rawType+").fromString("+value+")");
-            return (T)gson.fromJson(value,rawType);
-         }
-         public String toString(T value){
-            return gson.toJson(value);
-         }
-      };
-   }
+//   public <T> ParamConverter<T> getConverter(
+//      final Class<T> rawType, Type genericType, Annotation[] annotations
+//   ){
+////System.out.println("GsonConverter.getConverter("+rawType+",..)");
+//      if(rawType.isPrimitive()) return null;
+//      if(rawType==String.class) return null;
+//      return new ParamConverter<T>(){
+//         public T fromString(String value){
+////System.out.println("GsonConverter.getConverter("+rawType+").fromString("+value+")");
+//            return (T)gson.fromJson(value,rawType);
+//         }
+//         public String toString(T value){
+//            return gson.toJson(value);
+//         }
+//      };
+//   }
 }
